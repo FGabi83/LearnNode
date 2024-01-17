@@ -18,6 +18,7 @@ mongoose.connection.on('error', (err) => {
 });
 
 // READY?! Let's go!
+
 // import all our models
 require('./models/Store');
 

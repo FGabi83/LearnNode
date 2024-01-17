@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
-const slug = require('slugs');
+const mongoose = require('mongoose'); //mongoose package to interface with MongoDB
+mongoose.Promise = global.Promise; //built in ES6 promise, set the mongoose promise property to global
+const slug = require('slugs'); //package to create url friendly slugs
 
 const storeSchema = new mongoose.Schema({
   name: {
@@ -16,7 +16,7 @@ const storeSchema = new mongoose.Schema({
   tags: [String]
 });
 
-// pre-save hook
+// pre-save hook in MongoDB
 storeSchema.pre('save', function(next) {
     if(!this.isModified('name')) {
         next(); // skip it
