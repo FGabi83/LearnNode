@@ -13,7 +13,25 @@ const storeSchema = new mongoose.Schema({
     type: String,
     trim: true
   }, 
-  tags: [String]
+  tags: [String],
+  created: {
+    type: Date,
+    defaut: Date.now()
+  },
+  location: {
+    type: {
+      type: String,
+      defalault: 'Point'
+    },
+    coordinates: [{
+      type: Number,
+      required: 'You must supply coordinates!'
+    }],
+    address: {
+      type: String,
+      required: 'You must supply an address!'
+    }
+  }
 });
 
 // pre-save hook in MongoDB
