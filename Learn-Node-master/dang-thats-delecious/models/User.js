@@ -6,6 +6,7 @@ const validator = require('validator'); //validate email
 const mongodbErrorHandler = require('mongoose-mongodb-errors'); //better error handling
 const passportLocalMongoose = require('passport-local-mongoose'); //handles password hashing and salting
 
+
 const userSchema = new Schema({
   email: {
     type: String,
@@ -19,7 +20,9 @@ const userSchema = new Schema({
     type: String,
     required: 'Please supply a name',
     trim: true 
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 });
 
 userSchema.virtual('gravatar').get(function() {
