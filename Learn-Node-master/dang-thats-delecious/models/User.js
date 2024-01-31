@@ -22,6 +22,11 @@ const userSchema = new Schema({
   }
 });
 
+userSchema.virtual('gravatar').get(function() {
+  const hash = md5(this.email); //this refers to the user
+  return `https://gravatar.com/avatar/${hash}?s=200`;
+}); //virtual field
+
 userSchema.plugin(passportLocalMongoose, { usernameField: 'email' }); //adds a username field to our schema
 userSchema.plugin(mongodbErrorHandler); //handles errors better
 

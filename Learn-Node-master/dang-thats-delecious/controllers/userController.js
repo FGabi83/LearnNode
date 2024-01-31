@@ -16,6 +16,7 @@ exports.validateRegister = (req, res, next) => {
   req.checkBody('email', 'That email is not valid!').isEmail();
   req.sanitizeBody('email').normalizeEmail({ // sanitizeBody is a method provided by expressValidator
     remove_dots: false,
+    gmail_remove_dots: false, // remove_dots: false didnt do the trick, so I added this line
     remove_extension: false,
     gmail_remove_subaddress: false
   });
