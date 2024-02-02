@@ -37,8 +37,14 @@ const storeSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: 'You must supply an author'
-  
   }
+});
+
+// Define our indexes
+
+storeSchema.index({
+  name: 'text',
+  description: 'text'
 });
 
 // pre-save hook in MongoDB
