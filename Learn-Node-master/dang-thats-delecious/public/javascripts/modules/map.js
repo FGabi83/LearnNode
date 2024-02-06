@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { $ } from './bling';
 
-const mapOptions = {
-  center: { lat: 43.2, lng: -79.8 },
+// set up the defualt map options
+const mapOptions = { 
   zoom: 8
-
 };
 
-function loadPlaces(map, lat = 43.2, lng = -79.8) {
+// load places from the server and add them to the map
+function loadPlaces(map, lat, lng) {
   axios
     .get(`/api/stores/near?lat=${lat}&lng=${lng}`)
     .then(res => {
@@ -15,24 +15,21 @@ function loadPlaces(map, lat = 43.2, lng = -79.8) {
       if (!places.length) {
         alert('No places found.');
         return;
-      } 
-
-      // create bounds
+      }
 
       const bounds = new google.maps.LatLngBounds();
       const infoWindow = new google.maps.InfoWindow();
 
       const markers = places.map(place => {
-        const [placeLng, placeLat] = place.location.coordinates; // array destructuring
+        const [placeLng, placeLat] = place.location.coordinates;
         const position = { lat: placeLat, lng: placeLng };
-        bounds.extend(position); 
+        bounds.extend(position);
         const marker = new google.maps.Marker({ map, position });
-        marker.place = place; 
+        marker.place = place;
         return marker;
       });
 
-      // when someone clicks on a marker, show the details of that place
-      markers.forEach(marker =>  marker.addListener('click', function() {
+      markers.forEach(marker => marker.addListener('click', function() {
         const html = `
           <div class="popup">
             <a href="/store/${this.place.slug}">
@@ -42,28 +39,46 @@ function loadPlaces(map, lat = 43.2, lng = -79.8) {
           </div>
         `;
         infoWindow.setContent(html);
-        infoWindow.open(map, this); // open the window on top of 'this' marker
+        infoWindow.open(map, this);
       }));
-      
-      // zoom the map to fit all the markers perfectly
+
       map.setCenter(bounds.getCenter());
       map.fitBounds(bounds);
-
     });
 }
 
 function makeMap(mapDiv) {
   if (!mapDiv) return;
-  // make our map
-  const map = new google.maps.Map(mapDiv, mapOptions);
-  loadPlaces(map);
 
-  const input = $('[name="geolocate"]');
-  const autocomplete = new google.maps.places.Autocomplete(input);
-  autocomplete.addListener('place_changed', () => {
-    const place = autocomplete.getPlace();
-    loadPlaces(map, place.geometry.location.lat(), place.geometry.location.lng());
-  });
+  navigator.geolocation.getCurrentPosition(position => {
+    const { latitude, longitude } = position.coords;
+    const initialPosition = { lat: latitude, lng: longitude };
+    const map = new google.maps.Map(mapDiv, { ...mapOptions, center: initialPosition }); // ES6 spread operator to merge the two objects
+    loadPlaces(map, latitude, longitude);
+
+    const input = $('[name="geolocate"]');
+    const autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      loadPlaces(map, place.geometry.location.lat(), place.geometry.location.lng());
+    });
+  },
+  error => {
+    // Default coordinates if geolocation is denied or unavailable
+    const defaultPosition = { lat: 43.2, lng: -79.8 };
+    const map = new google.maps.Map(mapDiv, { ...mapOptions, center: defaultPosition });
+    loadPlaces(map, defaultPosition.lat, defaultPosition.lng);
+
+    const input = $('[name="geolocate"]');
+    const autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      loadPlaces(map, place.geometry.location.lat(), place.geometry.location.lng());
+    });
+
+    console.error(error.message); // Log the error message
+  }
+);
 }
 
 export default makeMap;
