@@ -3,6 +3,7 @@ const Store = mongoose.model('Store'); //already imported in start.js therefore 
 const multer = require('multer');
 const jimp = require('jimp');
 const uuid = require('uuid');
+const User = mongoose.model('User');
 
 const multerOptions = {
   storage: multer.memoryStorage(), //store in memory
@@ -144,3 +145,15 @@ exports.mapStores = async (req, res) => {
 exports.mapPage = (req, res) => {
   res.render('map', { title: 'Map' });
 };
+
+exports.heartStore = async (req, res) => {
+  const hearts = req.user.hearts.map(obj => obj.toString());
+  const operator = hearts.includes(req.params.id) ? '$pull' : '$addToSet'; //if the store is already in the hearts array, remove it, otherwise add it
+  const user = await User
+  .findByIdAndUpdate(req.user._id, 
+  { [operator]: { hearts: req.params.id } }, //ES6 computed property names
+  { new: true }
+  );
+  res.json(user);
+  
+}

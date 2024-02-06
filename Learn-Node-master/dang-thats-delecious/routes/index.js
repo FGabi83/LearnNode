@@ -6,7 +6,7 @@ const authController = require('../controllers/authController');
 
 // Do work here
 
-const { catchErrors } = require('../handlers/errorHandlers')
+const { catchErrors } = require('../handlers/errorHandlers');
 
 router.get('/', catchErrors(storeController.getStores));
 router.get('/stores', catchErrors(storeController.getStores));
@@ -55,8 +55,7 @@ router.get('/map', storeController.mapPage);
 // API
 
 router.get('/api/search', catchErrors(storeController.searchStores));
-
 router.get('/api/stores/near', catchErrors(storeController.mapStores));
-
+router.post('/api/stores/:id/heart', catchErrors(storeController.heartStore));
 
 module.exports = router;
