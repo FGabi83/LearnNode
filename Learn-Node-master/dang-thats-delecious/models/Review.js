@@ -26,5 +26,13 @@ const reviewSchema = new mongoose.Schema({
     max: 5
   }
 });
+//create hook to populate author and store fields in reviewSchema
+function autopopulate(next) {
+  this.populate('author');
+  next();
+}
+
+reviewSchema.pre('find', autopopulate); //pre-find hook
+reviewSchema.pre('findOne', autopopulate); //pre-findOne hook
 
 module.exports = mongoose.model('Review', reviewSchema);

@@ -31,16 +31,19 @@ const storeSchema = new mongoose.Schema({
       type: String,
       required: 'You must supply an address!'
     }
-  },
+  }, 
   photo: String,
   author: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: 'You must supply an author'
   }
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
 });
-
-// Define our indexes
+  
+  // Define our indexes
 
 storeSchema.index({
   name: 'text',
@@ -72,6 +75,13 @@ storeSchema.statics.getTagsList = function() {
     { $group: { _id: '$tags', count: { $sum: 1 }  }},
     { $sort: { count: -1 }}
   ]);
-}
+};
+// find reviews where the stores _id property === reviews store property
+storeSchema.virtual('reviews', {
+  ref: 'Review', // what model to link?
+  localField: '_id', // which field on the store?
+  foreignField: 'store' // which field on the review?
+
+});
 
 module.exports = mongoose.model('Store', storeSchema);
