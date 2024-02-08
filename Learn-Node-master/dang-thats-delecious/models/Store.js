@@ -69,6 +69,7 @@ storeSchema.pre('save', async function(next) {
     
 });
 
+// static methods are methods that are run on the model
 storeSchema.statics.getTagsList = function() {
   return this.aggregate([
     { $unwind: '$tags' },
@@ -76,6 +77,30 @@ storeSchema.statics.getTagsList = function() {
     { $sort: { count: -1 }}
   ]);
 };
+
+storeSchema.statics.getTopStores = function() {
+  return this.aggregate([
+    // Lookup stores and populate their reviews
+    { $lookup: { 
+      from: 'reviews', 
+      localField: '_id', 
+      foreignField: 'store', 
+      as: 'reviews' } 
+    },
+    // filter for only items that have 2 or more reviews
+    { $match: { 'reviews.1': { $exists: true } } }, // match documents where the second item of the array exists
+    // add the average reviews field
+    { $set: { // alias for $addFields
+      averageRating: { $avg: '$reviews.rating' }
+    } },
+    // sort it by our new field, highest reviews first
+    { $sort: { averageRating: -1 }},
+    // limit to at most 10
+    { $limit: 10 } 
+  ]);
+};
+
+
 // find reviews where the stores _id property === reviews store property
 storeSchema.virtual('reviews', {
   ref: 'Review', // what model to link?
@@ -83,5 +108,13 @@ storeSchema.virtual('reviews', {
   foreignField: 'store' // which field on the review?
 
 });
+
+function autopopulate(next) {
+  this.populate('reviews');
+  next();
+}
+
+storeSchema.pre('find', autopopulate); //pre-find hook
+storeSchema.pre('findOne', autopopulate); //pre-findOne hook
 
 module.exports = mongoose.model('Store', storeSchema);
